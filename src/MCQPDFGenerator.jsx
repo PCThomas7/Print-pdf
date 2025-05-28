@@ -757,14 +757,47 @@ const MCQPDFGenerator = () => {
             margin-bottom: 5px;
           }
           
+          /* Fixed footer at bottom of every page */
           .footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #ccc;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
             text-align: center;
-            column-span: all;
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
+            background: white;
+            z-index: 1000;
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
+          }
+          
+          /* Add bottom margin to content to avoid footer overlap */
+          .questions-container {
+            margin-bottom: 80px;
+          }
+          
+          /* Print-specific footer styles */
+          @media print {
+            .footer {
+              position: fixed;
+              bottom: 15px;
+              left: 15px;
+              right: 15px;
+              font-size: 10px;
+              background: transparent;
+              border-top: 1px solid #ccc;
+              padding: 8px 0;
+            }
+            
+            .questions-container {
+              margin-bottom: 60px;
+            }
+            
+            /* Ensure footer appears on every printed page */
+            @page {
+              margin-bottom: 60px;
+            }
           }
           
           /* Handle single column on small content */
