@@ -419,9 +419,146 @@ const MCQPDFGenerator = () => {
 
   const [paperTitle, setPaperTitle] = useState("Comprehensive Mathematics & Science MCQ Test");
   const [instructions, setInstructions] = useState("1. Choose the correct answer for each question.\n2. Mark your answers clearly on the answer sheet.\n3. Time allowed: 90 minutes.\n4. Total questions: 15\n5. Each question carries 4 marks.\n6. No negative marking.\n7. Use of calculators is not permitted.");
+  const [header, setHeader] = useState([]);
+  const [footer, setFooter] = useState([]);
+  const [watermark, setWatermark] = useState({ enabled: false, text: "" });
+  const [jsonInput, setJsonInput] = useState("");
+  const [showJsonImport, setShowJsonImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  // Add new question
+  // Parse JSON quiz data
+  const parseQuizJson = (jsonString) => {
+    try {
+      const data = JSON.parse(jsonString);
+      const quiz = data.quiz;
+      
+      if (!quiz) {
+        alert("Invalid JSON: 'quiz' object not found");
+        return;
+      }
+
+      // Extract metadata
+      if (quiz.title) {
+        setPaperTitle(quiz.title);
+      }
+      
+      if (quiz.metadata) {
+        if (quiz.metadata.header && Array.isArray(quiz.metadata.header)) {
+          setHeader(quiz.metadata.header);
+        }
+        
+        if (quiz.metadata.instructions && Array.isArray(quiz.metadata.instructions)) {
+          setInstructions(quiz.metadata.instructions.join('\n'));
+        }
+        
+        if (quiz.metadata.footer && Array.isArray(quiz.metadata.footer)) {
+          setFooter(quiz.metadata.footer);
+        }
+        
+        if (quiz.metadata.watermark) {
+          setWatermark(quiz.metadata.watermark);
+        }
+      }
+
+      // Extract questions from sections
+      if (quiz.sections && Array.isArray(quiz.sections)) {
+        const extractedQuestions = [];
+        
+        quiz.sections.forEach(section => {
+          if (section.questions && Array.isArray(section.questions)) {
+            section.questions.forEach(q => {
+              const question = {
+                id: q._id || q.id || Date.now() + Math.random(),
+                questionText: q.question_text ? q.question_text.replace(/\\\\/g, '') : "",
+                questionImage: q.image_url || "",
+                options: [
+                  { 
+                    text: q.option_a ? q.option_a.replace(/\\\\/g, '') : "", 
+                    image: q.option_a_image_url || "" 
+                  },
+                  { 
+                    text: q.option_b ? q.option_b.replace(/\\\\/g, '') : "", 
+                    image: q.option_b_image_url || "" 
+                  },
+                  { 
+                    text: q.option_c ? q.option_c.replace(/\\\\/g, '') : "", 
+                    image: q.option_c_image_url || "" 
+                  },
+                  { 
+                    text: q.option_d ? q.option_d.replace(/\\\\/g, '') : "", 
+                    image: q.option_d_image_url || "" 
+                  }
+                ],
+                correctAnswer: q.correct_answer,
+                explanation: q.explanation,
+                tags: q.tags || {}
+              };
+              
+              // Add option E if it exists
+              if (q.option_e && q.option_e.trim()) {
+                question.options.push({
+                  text: q.option_e.replace(/\\\\/g, ''),
+                  image: q.option_e_image_url || ""
+                });
+              }
+              
+              extractedQuestions.push(question);
+            });
+          }
+        });
+        
+        if (extractedQuestions.length > 0) {
+          setQuestions(extractedQuestions);
+          alert(`Successfully loaded ${extractedQuestions.length} questions from JSON!`);
+        } else {
+          alert("No questions found in the JSON data");
+        }
+      }
+      
+      setShowJsonImport(false);
+      setJsonInput("");
+      
+    } catch (error) {
+      alert("Invalid JSON format: " + error.message);
+    }
+  };
+
+  // Load sample JSON data
+  const loadSampleJson = () => {
+    const sampleJson = `{
+    "message": "Quiz fetched successfully",
+    "quiz": {
+        "metadata": {
+            "header": ["NEET 2026 Preparation Test"],
+            "instructions": ["Choose the correct answer for each question", "Mark your answers clearly", "Time allowed: 90 minutes"],
+            "footer": ["Good Luck!"],
+            "watermark": {
+                "enabled": true,
+                "text": "PROF. P.C. THOMAS & CHAITHANYA CLASSES"
+            }
+        },
+        "title": "HUMAN REPRODUCTION DPP-2 GAMETOGENESIS, MENSTRUAL CYCLE",
+        "sections": [
+            {
+                "name": "Biology Section",
+                "questions": [
+                    {
+                        "_id": "sample1",
+                        "question_text": "At which stage of life the oogenesis process is initiated?",
+                        "option_a": "Puberty",
+                        "option_b": "Embryonic development stage",
+                        "option_c": "Birth",
+                        "option_d": "Adult",
+                        "correct_answer": "B",
+                        "explanation": "Oogenesis is initiated during embryonic development stage when a couple of million oogonia are formed within each fetal ovary."
+                    }
+                ]
+            }
+        ]
+    }
+}`;
+    setJsonInput(sampleJson);
+  };
   const addQuestion = () => {
     const newQuestion = {
       id: Date.now(),
@@ -594,6 +731,40 @@ const MCQPDFGenerator = () => {
             .header, .instructions {
               column-span: all;
             }
+            .watermark {
+              display: block;
+            }
+          }
+          
+          /* Watermark styles */
+          .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 48px;
+            color: rgba(0, 0, 0, 0.1);
+            z-index: -1;
+            font-weight: bold;
+            white-space: nowrap;
+            pointer-events: none;
+          }
+          
+          /* Header and Footer styles */
+          .header-line {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+          }
+          
+          .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            column-span: all;
+            font-size: 12px;
+            color: #666;
           }
           
           /* Handle single column on small content */
@@ -607,12 +778,15 @@ const MCQPDFGenerator = () => {
       <body>
         <div class="header">
           <div class="title">${paperTitle}</div>
+          ${header.length > 0 ? header.map(h => `<div class="header-line">${h}</div>`).join('') : ''}
         </div>
         
         <div class="instructions">
           <h3>Instructions:</h3>
           <pre>${instructions}</pre>
         </div>
+
+        ${watermark.enabled ? `<div class="watermark">${watermark.text}</div>` : ''}
 
         <div class="questions-container">
         ${questions.map((question, index) => `
@@ -638,6 +812,8 @@ const MCQPDFGenerator = () => {
           </div>
         `).join('')}
         </div>
+
+        ${footer.length > 0 ? `<div class="footer">${footer.map(f => `<div>${f}</div>`).join('')}</div>` : ''}
 
         <script>
           // Wait for KaTeX to load then render all math content
@@ -726,7 +902,61 @@ const MCQPDFGenerator = () => {
           <FileText className="w-8 h-8" />
           MCQ Question Paper Generator
         </h1>
-        <p className="text-blue-100">Create professional MCQ question papers with LaTeX support</p>
+        <p className="text-blue-100">Create professional MCQ question papers with LaTeX support and JSON import</p>
+      </div>
+
+      {/* JSON Import Section */}
+      <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-lg mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-yellow-800">Import Quiz from JSON</h2>
+          <button
+            onClick={() => setShowJsonImport(!showJsonImport)}
+            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+          >
+            {showJsonImport ? 'Hide JSON Import' : 'Show JSON Import'}
+          </button>
+        </div>
+        
+        {showJsonImport && (
+          <div className="space-y-4">
+            <p className="text-sm text-yellow-700">
+              Paste your quiz JSON data below to automatically populate the form. This will replace existing questions.
+            </p>
+            
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={loadSampleJson}
+                className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
+              >
+                Load Sample JSON
+              </button>
+            </div>
+            
+            <textarea
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+              rows={8}
+              className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 font-mono text-sm"
+              placeholder="Paste your JSON quiz data here..."
+            />
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => parseQuizJson(jsonInput)}
+                disabled={!jsonInput.trim()}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Import Quiz Data
+              </button>
+              <button
+                onClick={() => {setJsonInput(""); setShowJsonImport(false);}}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Clear & Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Paper Settings */}
@@ -757,6 +987,59 @@ const MCQPDFGenerator = () => {
               placeholder="Enter instructions for students"
             />
           </div>
+        </div>
+        
+        {/* Additional metadata fields */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Header Lines (one per line)
+            </label>
+            <textarea
+              value={header.join('\n')}
+              onChange={(e) => setHeader(e.target.value.split('\n').filter(line => line.trim()))}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Additional header lines"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Footer Lines (one per line)
+            </label>
+            <textarea
+              value={footer.join('\n')}
+              onChange={(e) => setFooter(e.target.value.split('\n').filter(line => line.trim()))}
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Footer lines"
+            />
+          </div>
+        </div>
+        
+        {/* Watermark settings */}
+        <div className="mt-4 p-4 bg-white rounded border">
+          <div className="flex items-center gap-3 mb-3">
+            <input
+              type="checkbox"
+              id="watermark-enabled"
+              checked={watermark.enabled}
+              onChange={(e) => setWatermark({...watermark, enabled: e.target.checked})}
+              className="w-4 h-4 text-blue-600"
+            />
+            <label htmlFor="watermark-enabled" className="text-sm font-medium text-gray-700">
+              Enable Watermark
+            </label>
+          </div>
+          {watermark.enabled && (
+            <input
+              type="text"
+              value={watermark.text}
+              onChange={(e) => setWatermark({...watermark, text: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Watermark text"
+            />
+          )}
         </div>
       </div>
 
@@ -900,10 +1183,24 @@ const MCQPDFGenerator = () => {
         <div className="mt-8 border-t-2 border-purple-200 pt-8">
           <h2 className="text-2xl font-bold mb-6 text-center">{paperTitle}</h2>
           
+          {header.length > 0 && (
+            <div className="text-center mb-4">
+              {header.map((line, index) => (
+                <div key={index} className="text-gray-600">{line}</div>
+              ))}
+            </div>
+          )}
+          
           <div className="bg-gray-50 p-4 rounded-lg mb-6">
             <h3 className="font-semibold mb-2">Instructions:</h3>
             <pre className="whitespace-pre-wrap text-sm">{instructions}</pre>
           </div>
+
+          {watermark.enabled && (
+            <div className="text-center mb-4 text-gray-400 italic">
+              Watermark: {watermark.text}
+            </div>
+          )}
 
           {questions.map((question, index) => (
             <div key={question.id} className="mb-8 p-6 bg-white border border-gray-200 rounded-lg">
@@ -941,8 +1238,28 @@ const MCQPDFGenerator = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Show additional info if imported from JSON */}
+              {question.correctAnswer && (
+                <div className="mt-3 pt-3 border-t border-gray-200 text-sm text-gray-600">
+                  <strong>Correct Answer:</strong> {question.correctAnswer}
+                  {question.explanation && (
+                    <div className="mt-1">
+                      <strong>Explanation:</strong> {question.explanation}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
+
+          {footer.length > 0 && (
+            <div className="text-center mt-8 pt-4 border-t border-gray-300">
+              {footer.map((line, index) => (
+                <div key={index} className="text-gray-600">{line}</div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
