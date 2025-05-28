@@ -20,12 +20,15 @@ const ActionButtons = () => {
 
   // Handle PDF generation
   const handleGeneratePDF = () => {
+    const headerArray = typeof header === 'string' ? (header ? header.split('\n') : []) : header;
+    const footerArray = typeof footer === 'string' ? (footer ? footer.split('\n') : []) : footer;
+
     generatePDF({
       questions,
       paperTitle,
       instructions,
-      header,
-      footer,
+      header: headerArray,
+      footer: footerArray,
       watermark
     });
   };
