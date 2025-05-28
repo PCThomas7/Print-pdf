@@ -56,6 +56,9 @@ export const QuizProvider = ({ children }) => {
   const [showJsonImport, setShowJsonImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [answerKeyDisplayMode, setAnswerKeyDisplayMode] = useState("NONE"); // NONE, KEY_ONLY, KEY_AND_EXPLANATION
+  const [fontSize, setFontSize] = useState(12);
+  const [fontWeight, setFontWeight] = useState("normal"); // normal, bold
+  const [fontColor, setFontColor] = useState("#000000");
 
   // Functions
   const addQuestion = () => {
@@ -132,7 +135,13 @@ export const QuizProvider = ({ children }) => {
     updateOption,
     setQuizData,
     answerKeyDisplayMode,
-    setAnswerKeyDisplayMode
+    setAnswerKeyDisplayMode,
+    fontSize,
+    setFontSize,
+    fontWeight,
+    setFontWeight,
+    fontColor,
+    setFontColor
   };
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;

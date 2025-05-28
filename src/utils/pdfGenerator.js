@@ -21,7 +21,10 @@ export const generatePDF = ({
   questions,
   footer,
   watermark,
-  answerKeyDisplayMode
+  answerKeyDisplayMode,
+  fontSize,
+  fontWeight,
+  fontColor
 }) => {
   // Create a new window for printing
   const printWindow = window.open('', '_blank');
@@ -36,10 +39,13 @@ export const generatePDF = ({
       <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
       <style>
         body {
+          font-size: ${fontSize}px;
+          font-weight: ${fontWeight};
+          color: ${fontColor};
           font-family: 'Times New Roman', serif;
           line-height: 1.4;
           margin: 15px;
-          font-size: 12px;
+          /* font-size, font-weight, and color are now set dynamically */
         }
         .header {
           text-align: center;
@@ -140,7 +146,7 @@ export const generatePDF = ({
         @media print {
           body { 
             margin: 12px;
-            font-size: 11px;
+            /* font-size is now set dynamically, consider if print specific size is needed or inherit from body */
           }
           .questions-container {
             column-gap: 20px;

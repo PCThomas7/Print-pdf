@@ -16,7 +16,10 @@ const ActionButtons = () => {
     watermark,
     showPreview,
     setShowPreview,
-    answerKeyDisplayMode
+    answerKeyDisplayMode,
+    fontSize,
+    fontWeight,
+    fontColor
   } = useQuiz();
 
   // Handle PDF generation
@@ -31,7 +34,10 @@ const ActionButtons = () => {
       header: headerArray,
       footer: footerArray,
       watermark,
-      answerKeyDisplayMode
+      answerKeyDisplayMode,
+      fontSize,
+      fontWeight,
+      fontColor
     });
   };
 
