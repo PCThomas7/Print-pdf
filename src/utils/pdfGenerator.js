@@ -142,28 +142,102 @@ export const generatePDF = ({
           font-size: 0.95em;
         }
         
-        /* Print specific styles */
+        /* Watermark styles */
+        .watermark {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-45deg);
+          font-size: 48px;
+          color: rgba(0, 0, 0, 0.1);
+          z-index: -1;
+          font-weight: bold;
+          white-space: nowrap;
+          pointer-events: none;
+        }
+        
+        /* Header and Footer styles */
+        .header-line {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 5px;
+        }
+        
+        /* Fixed footer at bottom of every page */
+        .footer {
+          position: fixed;
+          bottom: 20px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 11px;
+          color: #666;
+          background: white;
+          z-index: 1000;
+          padding: 10px 0;
+          border-top: 1px solid #ddd;
+        }
+        
+        /* Add bottom margin to content to avoid footer overlap */
+        .questions-container {
+          margin-bottom: 80px;
+        }
+        
+        /* Print-specific styles */
         @media print {
+          @page {
+            /* Set reasonable margins for content */
+            margin-top: 0.75in;
+            margin-bottom: 0.75in; /* Ensure space for custom footer and page number */
+            margin-left: 0.5in;
+            margin-right: 0.5in;
+
+            /* Attempt to clear browser default headers */
+            @top-left { content: ""; }
+            @top-center { content: ""; }
+            @top-right { content: ""; }
+            /* @bottom-left, @bottom-center, @bottom-right are not touched here
+               to allow custom footer and page numbering to work as intended.
+               Page numbering uses @bottom-center specifically. */
+          }
+
           body { 
-            margin: 12px;
+            margin: 0; /* Content will now be spaced by @page margins */
             /* font-size is now set dynamically, consider if print specific size is needed or inherit from body */
           }
+
           .questions-container {
             column-gap: 20px;
+            margin-bottom: 60px; /* Ensure space for the fixed footer */
           }
+
           .question { 
             page-break-inside: avoid;
             break-inside: avoid;
           }
+
           .header, .instructions {
             column-span: all;
           }
+
           .watermark {
             display: block;
           }
+
+          .footer {
+            position: fixed;
+            bottom: 15px; /* Adjust if needed based on @page margin-bottom */
+            left: 15px;
+            right: 15px;
+            font-size: 10px;
+            background: transparent; /* Or white if preferred */
+            border-top: 1px solid #ccc;
+            padding: 8px 0;
+            /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
+          }
         }
         
-        /* Watermark styles */
+        /* Watermark styles (This is a general style, ensure it doesn't conflict with print version if different behavior is needed) */
         .watermark {
           position: fixed;
           top: 50%;
