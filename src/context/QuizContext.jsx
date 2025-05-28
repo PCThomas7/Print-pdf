@@ -7,7 +7,7 @@ const QuizContext = createContext();
  * QuizProvider Component
  * Provides quiz state and functions to the application
  */
-export const QuizProvider = ({ children }) => {
+export const QuizProvider = ({ children, initialData }) => {
   // Default questions
   const defaultQuestions = [
     {
@@ -45,13 +45,13 @@ export const QuizProvider = ({ children }) => {
     }
   ];
 
-  // State
-  const [questions, setQuestions] = useState(defaultQuestions);
-  const [paperTitle, setPaperTitle] = useState("Comprehensive Mathematics & Science MCQ Test");
-  const [instructions, setInstructions] = useState("1. Choose the correct answer for each question.\n2. Mark your answers clearly on the answer sheet.\n3. Time allowed: 90 minutes.\n4. Total questions: 15\n5. Each question carries 4 marks.\n6. No negative marking.\n7. Use of calculators is not permitted.");
-  const [header, setHeader] = useState([]);
-  const [footer, setFooter] = useState([]);
-  const [watermark, setWatermark] = useState({ enabled: false, text: "" });
+  // State - Use initialData if provided, otherwise use defaults
+  const [questions, setQuestions] = useState(initialData?.questions || defaultQuestions);
+  const [paperTitle, setPaperTitle] = useState(initialData?.paperTitle || "Comprehensive Mathematics & Science MCQ Test");
+  const [instructions, setInstructions] = useState(initialData?.instructions || "1. Choose the correct answer for each question.\n2. Mark your answers clearly on the answer sheet.\n3. Time allowed: 90 minutes.\n4. Total questions: 15\n5. Each question carries 4 marks.\n6. No negative marking.\n7. Use of calculators is not permitted.");
+  const [header, setHeader] = useState(initialData?.header || []);
+  const [footer, setFooter] = useState(initialData?.footer || []);
+  const [watermark, setWatermark] = useState(initialData?.watermark || { enabled: false, text: "" });
   const [jsonInput, setJsonInput] = useState("");
   const [showJsonImport, setShowJsonImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);

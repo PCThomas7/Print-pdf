@@ -9,10 +9,11 @@ import QuizPreview from '../Preview/QuizPreview';
 /**
  * MCQPDFGenerator Component
  * Main component that combines all the quiz creation functionality
+ * @param {Object} initialData - Optional initial quiz data
  */
-const MCQPDFGenerator = () => {
+const MCQPDFGenerator = ({ initialData }) => {
   return (
-    <QuizProvider>
+    <QuizProvider initialData={initialData}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-blue-800 mb-2">MCQ PDF Generator</h1>

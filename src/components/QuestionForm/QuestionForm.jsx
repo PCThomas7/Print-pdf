@@ -57,7 +57,7 @@ const QuestionForm = ({ question }) => {
             <img 
               src={question.questionImage} 
               alt="Question" 
-              className="max-h-40 border border-gray-200 rounded" 
+              className="w-40 h-40 object-cover border border-gray-200 rounded" 
               onError={(e) => e.target.style.display = 'none'}
             />
           </div>
@@ -112,7 +112,7 @@ const QuestionForm = ({ question }) => {
                     <img 
                       src={option.image} 
                       alt={`Option ${String.fromCharCode(65 + index)}`} 
-                      className="max-h-32 border border-gray-200 rounded" 
+                      className="w-32 h-32 object-cover border border-gray-200 rounded" 
                       onError={(e) => e.target.style.display = 'none'}
                     />
                   </div>
