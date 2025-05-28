@@ -55,6 +55,7 @@ export const QuizProvider = ({ children }) => {
   const [jsonInput, setJsonInput] = useState("");
   const [showJsonImport, setShowJsonImport] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [answerKeyDisplayMode, setAnswerKeyDisplayMode] = useState("NONE"); // NONE, KEY_ONLY, KEY_AND_EXPLANATION
 
   // Functions
   const addQuestion = () => {
@@ -129,7 +130,9 @@ export const QuizProvider = ({ children }) => {
     removeQuestion,
     updateQuestion,
     updateOption,
-    setQuizData
+    setQuizData,
+    answerKeyDisplayMode,
+    setAnswerKeyDisplayMode
   };
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;

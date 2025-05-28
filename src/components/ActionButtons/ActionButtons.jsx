@@ -15,7 +15,8 @@ const ActionButtons = () => {
     footer, 
     watermark,
     showPreview,
-    setShowPreview
+    setShowPreview,
+    answerKeyDisplayMode
   } = useQuiz();
 
   // Handle PDF generation
@@ -29,7 +30,8 @@ const ActionButtons = () => {
       instructions,
       header: headerArray,
       footer: footerArray,
-      watermark
+      watermark,
+      answerKeyDisplayMode
     });
   };
 

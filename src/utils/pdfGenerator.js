@@ -20,7 +20,8 @@ export const generatePDF = ({
   instructions,
   questions,
   footer,
-  watermark
+  watermark,
+  answerKeyDisplayMode
 }) => {
   // Create a new window for printing
   const printWindow = window.open('', '_blank');
@@ -266,6 +267,21 @@ export const generatePDF = ({
       `).join('')}
       </div>
 
+      </div>
+
+      ${answerKeyDisplayMode !== 'NONE' ? `
+      <div style="page-break-before: always;"></div>
+      <div class="answer-key-container">
+        <h2 style="text-align:center; font-size: 20px; margin-bottom: 20px;">Answer Key ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' ? '& Explanations' : ''}</h2>
+        ${questions.map((q, index) => `
+          <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
+            <div style="font-weight: bold;">${index + 1}. Correct Answer: ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer )) /* Handle both text and index based correct answer */}</div>
+            ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}"></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
       ${footer.length > 0 ? `<div class="footer">${footer.map(f => `<div>${f}</div>`).join('')}</div>` : ''}
 
       <script>
@@ -299,6 +315,18 @@ export const generatePDF = ({
               }
             `).join('')}
           `).join('')}
+
+          ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' ? `
+          ${questions.map(q => `
+            if (document.getElementById('explanation-${q.id}')) {
+              try {
+                document.getElementById('explanation-${q.id}').innerHTML = '<strong>Explanation:</strong> ' + renderMathContent('${q.explanation ? q.explanation.replace(/'/g, "\\'") : ''}');
+              } catch (e) {
+                console.error('Error rendering explanation ${q.id}:', e);
+              }
+            }
+          `).join('')}
+          ` : ''}
 
           // Auto-print after rendering
           setTimeout(() => {

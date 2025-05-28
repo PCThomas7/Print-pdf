@@ -17,7 +17,9 @@ const PaperSettings = () => {
     footer,
     setFooter,
     watermark,
-    setWatermark
+    setWatermark,
+    answerKeyDisplayMode,
+    setAnswerKeyDisplayMode
   } = useQuiz();
 
   return (
@@ -132,6 +134,22 @@ const PaperSettings = () => {
               )}
             </div>
           )}
+        </div>
+
+        {/* Answer Key Display Mode */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Answer Key Display
+          </label>
+          <select
+            value={answerKeyDisplayMode}
+            onChange={(e) => setAnswerKeyDisplayMode(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="NONE">None</option>
+            <option value="KEY_ONLY">Answer Key Only</option>
+            <option value="KEY_AND_EXPLANATION">Answer Key with Explanations</option>
+          </select>
         </div>
       </div>
     </div>
