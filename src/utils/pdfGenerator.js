@@ -181,7 +181,7 @@ export const generatePDF = ({
         /* Fixed footer at bottom of every page */
         .footer {
           position: fixed;
-          bottom: 20px;
+          bottom: 10px; /* Lowered from 20px to 10px */
           left: 0;
           right: 0;
           text-align: center;
@@ -195,7 +195,7 @@ export const generatePDF = ({
         
         /* Add bottom margin to content to avoid footer overlap */
         .questions-container {
-          margin-bottom: 80px;
+          margin-bottom: 70px; /* Adjusted from 80px to 70px */
         }
         
         /* Print-specific styles */
@@ -241,7 +241,7 @@ export const generatePDF = ({
 
           .footer {
             position: fixed;
-            bottom: 15px; /* Adjust if needed based on @page margin-bottom */
+            bottom: 5px; /* Lowered from 15px to 5px for print */
             left: 15px;
             right: 15px;
             font-size: 10px;
@@ -276,7 +276,7 @@ export const generatePDF = ({
         /* Fixed footer at bottom of every page */
         .footer {
           position: fixed;
-          bottom: 20px;
+          bottom: 10px; /* Lowered from 20px to 10px */
           left: 0;
           right: 0;
           text-align: center;
@@ -290,7 +290,7 @@ export const generatePDF = ({
         
         /* Add bottom margin to content to avoid footer overlap */
         .questions-container {
-          margin-bottom: 80px;
+          margin-bottom: 70px; /* Adjusted from 80px to 70px */
         }
         
         /* Print-specific footer styles */
@@ -307,12 +307,12 @@ export const generatePDF = ({
           }
           
           .questions-container {
-            margin-bottom: 60px;
+            margin-bottom: 50px; /* Adjusted from 60px to 50px for print */
           }
           
           /* Ensure footer appears on every printed page */
           @page {
-            margin-bottom: 60px;
+            margin-bottom: 50px; /* Adjusted from 60px to 50px for print */
           }
         }
         
