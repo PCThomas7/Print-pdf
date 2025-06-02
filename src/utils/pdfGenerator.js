@@ -14,6 +14,20 @@
  * @param {Object} params.watermark - Watermark settings
  * @returns {Window} - The opened print window
  */
+const escapeHTML = (str) => {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[&<>'"\/]/g, function (match) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '/': '&#x2F;'
+    }[match];
+  });
+};
+
 export const generatePDF = ({
   paperTitle,
   header,
@@ -35,8 +49,9 @@ export const generatePDF = ({
     <html>
     <head>
       <title>${paperTitle}</title>
+      <!-- KaTeX CSS link can be included here or managed by GeneratedPdfPage.jsx -->
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+      <!-- KaTeX JS will be loaded by GeneratedPdfPage.jsx -->
       <style>
         body {
           font-size: ${fontSize}px;
@@ -329,7 +344,7 @@ export const generatePDF = ({
             Question ${index + 1}:
           </div>
           <div class="question-content">
-            <div id="question-${question.id}-text"></div>
+            <div id="question-${question.id}-text">${escapeHTML(question.questionText)}</div>
             ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${index + 1} Image">` : ''}
           </div>
           <div class="options">
@@ -337,7 +352,7 @@ export const generatePDF = ({
               <div class="option">
                 <div class="option-label">${String.fromCharCode(65 + optIndex)})</div>
                 <div class="option-content">
-                  <div id="option-${question.id}-${optIndex}"></div>
+                  <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
                   ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
                 </div>
               </div>
@@ -356,7 +371,7 @@ export const generatePDF = ({
         ${questions.map((q, index) => `
           <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
             <div style="font-weight: bold;">${index + 1}. Correct Answer: ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer )) /* Handle both text and index based correct answer */}</div>
-            ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}"></div>` : ''}
+            ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${escapeHTML(q.explanation)}</div>` : ''}
           </div>
         `).join('')}
       </div>
@@ -364,96 +379,10 @@ export const generatePDF = ({
 
       ${footer.length > 0 ? `<div class="footer">${footer.map(f => `<div>${f}</div>`).join('')}</div>` : ''}
 
-      <script>
-        // Wait for KaTeX to load then render all math content
-        function renderAllMath() {
-          if (!window.katex) {
-            setTimeout(renderAllMath, 100);
-            return;
-          }
-
-          ${questions.map(question => `
-            // Render question text
-            try {
-              const questionElement = document.getElementById('question-${question.id}-text');
-              if (questionElement) {
-                questionElement.innerHTML = renderMathContent('${question.questionText.replace(/'/g, "\\'")}')
-              }
-            } catch (e) {
-              console.error('Error rendering question ${question.id}:', e);
-            }
-
-            // Render options
-            ${question.options.map((option, optIndex) => `
-              try {
-                const optionElement = document.getElementById('option-${question.id}-${optIndex}');
-                if (optionElement) {
-                  optionElement.innerHTML = renderMathContent('${option.text.replace(/'/g, "\\'")}')
-                }
-              } catch (e) {
-                console.error('Error rendering option ${question.id}-${optIndex}:', e);
-              }
-            `).join('')}
-          `).join('')}
-
-          ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' ? `
-          ${questions.map(q => `
-            if (document.getElementById('explanation-${q.id}')) {
-              try {
-                document.getElementById('explanation-${q.id}').innerHTML = '<strong>Explanation:</strong> ' + renderMathContent('${q.explanation ? q.explanation.replace(/'/g, "\\'") : ''}');
-              } catch (e) {
-                console.error('Error rendering explanation ${q.id}:', e);
-              }
-            }
-          `).join('')}
-          ` : ''}
-
-          // Auto-print after rendering
-          setTimeout(() => {
-            window.print();
-          }, 1000);
-        }
-
-        function renderMathContent(text) {
-          if (!text || !window.katex) return text;
-          
-          // Simple math detection and rendering
-          try {
-            // Handle display math $$...$$ 
-            text = text.replace(/\$\$(.*?)\$\$/g, (match, math) => {
-              try {
-                return katex.renderToString(math, {displayMode: true, throwOnError: false});
-              } catch (e) {
-                return match;
-              }
-            });
-            
-            // Handle inline math $...$
-            text = text.replace(/\$(.*?)\$/g, (match, math) => {
-              try {
-                return katex.renderToString(math, {displayMode: false, throwOnError: false});
-              } catch (e) {
-                return match;
-              }
-            });
-            
-            // Handle line breaks
-            text = text.replace(/\\\\\\\\/g, '<br/>');
-            
-            return text;
-          } catch (e) {
-            return text;
-          }
-        }
-
-        renderAllMath();
-      </script>
     </body>
     </html>
   `;
 
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
-  
-  return printWindow;
+  return htmlContent;
+
 };

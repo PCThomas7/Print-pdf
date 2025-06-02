@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuiz } from '../../context/QuizContext';
-import { generatePDF } from '../../utils/pdfGenerator';
+import { useNavigate } from 'react-router-dom';
+import { generatePDF } from '../../utils/pdfGenerator'; // Added import
 
 /**
  * ActionButtons Component
@@ -22,12 +23,13 @@ const ActionButtons = () => {
     fontColor
   } = useQuiz();
 
-  // Handle PDF generation
+  const navigate = useNavigate();
+
   const handleGeneratePDF = () => {
     const headerArray = typeof header === 'string' ? (header ? header.split('\n') : []) : header;
     const footerArray = typeof footer === 'string' ? (footer ? footer.split('\n') : []) : footer;
 
-    generatePDF({
+    const quizDataForPdf = {
       questions,
       paperTitle,
       instructions,
@@ -38,6 +40,15 @@ const ActionButtons = () => {
       fontSize,
       fontWeight,
       fontColor
+    };
+    // Generate HTML content and navigate to the dedicated PDF page
+    const htmlContent = generatePDF(quizDataForPdf);
+    navigate('/generated-pdf', { 
+      state: { 
+        htmlContent,
+        questions: quizDataForPdf.questions, // Pass questions for KaTeX rendering
+        answerKeyDisplayMode: quizDataForPdf.answerKeyDisplayMode // Pass display mode
+      }
     });
   };
 
