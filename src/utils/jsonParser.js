@@ -24,7 +24,8 @@ export const parseQuizJson = (jsonString) => {
       instructions: "",
       footer: [],
       watermark: { enabled: false, text: "" },
-      questions: []
+      questions: [],
+      sections: [] // Add sections array to store section information
     };
 
     // Extract metadata
@@ -49,9 +50,13 @@ export const parseQuizJson = (jsonString) => {
     // Extract questions from sections
     if (quiz.sections && Array.isArray(quiz.sections)) {
       const extractedQuestions = [];
+      const sections = [];
       
       quiz.sections.forEach(section => {
         if (section.questions && Array.isArray(section.questions)) {
+          const sectionQuestions = [];
+          const sectionName = section.name || "";
+          
           section.questions.forEach(q => {
             const question = {
               id: q._id || q.id || Date.now() + Math.random(),
@@ -77,7 +82,8 @@ export const parseQuizJson = (jsonString) => {
               ],
               correctAnswer: q.correct_answer,
               explanation: q.explanation,
-              tags: q.tags || {}
+              tags: q.tags || {},
+              sectionName: sectionName // Add section name to each question
             };
             
             // Add option E if it exists
@@ -89,12 +95,22 @@ export const parseQuizJson = (jsonString) => {
             }
             
             extractedQuestions.push(question);
+            sectionQuestions.push(question);
           });
+          
+          // Add section info
+          if (sectionQuestions.length > 0) {
+            sections.push({
+              name: sectionName,
+              questions: sectionQuestions
+            });
+          }
         }
       });
       
       if (extractedQuestions.length > 0) {
         result.questions = extractedQuestions;
+        result.sections = sections; // Add sections to result
         result.message = `Successfully loaded ${extractedQuestions.length} questions from JSON!`;
       } else {
         result.message = "No questions found in the JSON data";

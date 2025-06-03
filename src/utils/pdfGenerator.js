@@ -38,7 +38,8 @@ export const generatePDF = ({
   answerKeyDisplayMode,
   fontSize,
   fontWeight,
-  fontColor
+  fontColor,
+  sections
 }) => {
   // Create a new window for printing
   const printWindow = window.open('', '_blank');
@@ -108,9 +109,9 @@ export const generatePDF = ({
         }
         .question-header {
           font-weight: bold;
-          margin-bottom: 8px;
           font-size: 13px;
           color: #333;
+          display: inline;
         }
         .question-content {
           margin-bottom: 10px;
@@ -230,6 +231,10 @@ export const generatePDF = ({
             page-break-inside: avoid;
             break-inside: avoid;
           }
+          .question-num-text{
+           display: flex;
+           gap :5px;
+          }
 
           .header, .instructions {
             column-span: all;
@@ -338,28 +343,67 @@ export const generatePDF = ({
       ${watermark.enabled ? `<div class="watermark">${watermark.text}</div>` : ''}
 
       <div class="questions-container">
-      ${questions.map((question, index) => `
-        <div class="question">
-          <div class="question-header">
-            Question ${index + 1}:
-          </div>
-          <div class="question-content">
-            <div id="question-${question.id}-text">${escapeHTML(question.questionText)}</div>
-            ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${index + 1} Image">` : ''}
-          </div>
-          <div class="options">
-            ${question.options.map((option, optIndex) => `
-              <div class="option">
-                <div class="option-label">${String.fromCharCode(65 + optIndex)})</div>
-                <div class="option-content">
-                  <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
-                  ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
+      ${sections && sections.length > 0 ? 
+        // If we have sections, render questions grouped by section
+        sections.map((section, sectionIndex) => `
+          ${section.name ? `
+            <div class="section-header" style="column-span: all; margin-top: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold; background-color: #f0f0f0; padding: 8px 12px; border-radius: 4px; page-break-inside: avoid;">
+              ${section.name}
+            </div>
+          ` : ''}
+          ${section.questions.map((question, questionIndex) => {
+            // Calculate the overall question number
+            let overallIndex = questionIndex;
+            for (let i = 0; i < sectionIndex; i++) {
+              overallIndex += sections[i].questions.length;
+            }
+            return `
+              <div class="question">
+                <div class="question-content">
+                  <div class="question-num-text">
+                  <div class="question-header">${overallIndex + 1}.  </div>
+                  <div id="question-${question.id}-text">${escapeHTML(question.questionText)}</div>
+                  </div>
+                  ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${overallIndex + 1} Image">` : ''}
+                </div>
+                <div class="options">
+                  ${question.options.map((option, optIndex) => `
+                    <div class="option">
+                      <div class="option-label">${String.fromCharCode(65 + optIndex)})</div>
+                      <div class="option-content">
+                        <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
+                        ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
+                      </div>
+                    </div>
+                  `).join('')}
                 </div>
               </div>
-            `).join('')}
+            `;
+          }).join('')}
+        `).join('') 
+        : 
+        // If no sections, render questions as before
+        questions.map((question, index) => `
+          <div class="question">
+            <div class="question-content">
+            <div class="question-header">${index + 1}. </div>
+              <div id="question-${question.id}-text">${escapeHTML(question.questionText)}</div>
+              ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${index + 1} Image">` : ''}
+            </div>
+            <div class="options">
+              ${question.options.map((option, optIndex) => `
+                <div class="option">
+                  <div class="option-label">${String.fromCharCode(65 + optIndex)})</div>
+                  <div class="option-content">
+                    <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
+                    ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
-      `).join('')}
+        `).join('')
+      }
       </div>
 
       </div>

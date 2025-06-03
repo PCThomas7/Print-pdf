@@ -29,6 +29,26 @@ const ActionButtons = () => {
     const headerArray = typeof header === 'string' ? (header ? header.split('\n') : []) : header;
     const footerArray = typeof footer === 'string' ? (footer ? footer.split('\n') : []) : footer;
 
+    // Group questions by section if they have sectionName property
+    let sections = [];
+    if (questions.length > 0 && questions[0].sectionName) {
+      // Create a map of section names to questions
+      const sectionMap = {};
+      questions.forEach(question => {
+        const sectionName = question.sectionName || 'Default Section';
+        if (!sectionMap[sectionName]) {
+          sectionMap[sectionName] = [];
+        }
+        sectionMap[sectionName].push(question);
+      });
+      
+      // Convert map to array of section objects
+      sections = Object.keys(sectionMap).map(name => ({
+        name,
+        questions: sectionMap[name]
+      }));
+    }
+
     const quizDataForPdf = {
       questions,
       paperTitle,
@@ -39,7 +59,8 @@ const ActionButtons = () => {
       answerKeyDisplayMode,
       fontSize,
       fontWeight,
-      fontColor
+      fontColor,
+      sections: sections.length > 0 ? sections : undefined
     };
     // Generate HTML content and navigate to the dedicated PDF page
     const htmlContent = generatePDF(quizDataForPdf);
