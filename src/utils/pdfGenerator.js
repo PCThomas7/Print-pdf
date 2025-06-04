@@ -111,14 +111,17 @@ export const generatePDF = ({
           column-count: 2;
           column-gap: 25px;
           column-rule: 1px solid #ddd;
+          padding-bottom: 20px; /* Add padding to prevent column rule from touching footer */
         }
         
         .question {
-          margin-bottom: 20px;
+          margin-bottom: 25px;
           page-break-inside: avoid;
           break-inside: avoid;
           display: inline-block;
           width: 100%;
+          position: relative; /* Establish positioning context */
+          padding-bottom: 5px; /* Add padding to create space at bottom */
         }
         .question-header {
           font-weight: bold;
@@ -206,6 +209,7 @@ export const generatePDF = ({
           padding: 5px 0;
           border-top: 1px solid #ddd;
           width: 100%;
+          margin-top: 10px; /* Add margin to prevent overlap with content */
         }
         
         /* Add bottom margin to content to avoid footer overlap */
@@ -224,8 +228,8 @@ export const generatePDF = ({
           }
           @page {
             /* Set reasonable margins for content */
-            margin-top: 0.75in;
-            margin-bottom: 0.50in; /* Ensure space for custom footer and page number */
+            margin-top: 0.50in;
+            margin-bottom: 0.50in; /* Increased space for footer to prevent overlap */
             margin-left: 0.5in;
             margin-right: 0.5in;
 
@@ -246,12 +250,15 @@ export const generatePDF = ({
 
           .questions-container {
             column-gap: 20px;
-            margin-bottom: 30px; /* Reduced to prevent excessive space */
+            margin-bottom: 50px; /* Increased to prevent column rule from touching footer */
+            column-rule: 1px solid #ddd;
+            padding-bottom: 20px; /* Add padding to ensure column rule doesn't extend to footer */
           }
 
           .question { 
             page-break-inside: avoid;
             break-inside: avoid;
+            margin-bottom: 25px; /* Increased margin to prevent questions from touching page breaks */
           }
           .question-num-text{
            display: flex;
@@ -273,10 +280,11 @@ export const generatePDF = ({
             right: 0;
             width: 100%;
             font-size: 10px;
-            background: transparent; /* Or white if preferred */
+            background: white; /* Changed to white to ensure separation */
             border-top: 1px solid #ccc;
             padding: 5px 0;
-            /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
+            z-index: 2000; /* Ensure it's above column rule */
+            margin-top: 15px; /* Add margin to create separation */
           }
         }
         
@@ -327,19 +335,21 @@ export const generatePDF = ({
         @media print {
           .footer {
             position: fixed;
-            bottom: 50;
+            bottom: 0;
             left: 0;
             right: 0;
             width: 100%;
             font-size: 10px;
-            background: transparent; /* Or white if preferred */
+            background: white;
             border-top: 1px solid #ccc;
             padding: 5px 0;
-            /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
+            z-index: 2000; /* Ensure it's above column rule */
+            margin-top: 15px; /* Add margin to create separation */
           }
           
           .questions-container {
-            margin-bottom: 30px; /* Reduced to prevent excessive space */
+            margin-bottom: 50px; /* Increased to prevent column rule from touching footer */
+            padding-bottom: 20px; /* Add padding to ensure column rule doesn't extend to footer */
           }
         }
         
