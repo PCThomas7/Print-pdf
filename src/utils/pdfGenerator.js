@@ -421,12 +421,22 @@ export const generatePDF = ({
       <div style="page-break-before: always;"></div>
       <div class="answer-key-container">
         <h2 style="text-align:center; font-size: 20px; margin-bottom: 20px;">Answer Key ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' ? '& Explanations' : ''}</h2>
-        ${questions.map((q, index) => `
-          <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
-            <div style="font-weight: bold;">${index + 1}. Correct Answer: ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer )) /* Handle both text and index based correct answer */}</div>
-            ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${escapeHTML(q.explanation)}</div>` : ''}
+        ${answerKeyDisplayMode === 'KEY_ONLY' ? `
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; width: 100%;">
+            ${questions.map((q, index) => `
+              <div style="font-weight: bold; page-break-inside: avoid;">
+                ${index + 1}. ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer))}
+              </div>
+            `).join('')}
           </div>
-        `).join('')}
+        ` : `
+          ${questions.map((q, index) => `
+            <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
+              <div style="font-weight: bold;">${index + 1}. Correct Answer: ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer))}</div>
+              ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${escapeHTML(q.explanation)}</div>` : ''}
+            </div>
+          `).join('')}
+        `}
       </div>
       ` : ''}
 
