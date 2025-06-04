@@ -119,8 +119,32 @@ const GeneratedPdfPage = () => {
 
     // Set the initial HTML content
     contentRef.current.innerHTML = htmlContent;
+    
+    // Hide URLs in any dynamically added links
+    const hideUrls = () => {
+      const links = contentRef.current.querySelectorAll('a');
+      links.forEach(link => {
+        link.style.pointerEvents = 'none';
+        link.style.cursor = 'default';
+        link.style.textDecoration = 'none';
+        link.style.color = 'inherit';
+        // Prevent showing URL in status bar
+        link.addEventListener('mouseover', (e) => {
+          e.preventDefault();
+          window.status = '';
+          return true;
+        });
+      });
+    };
+    
+    // Apply URL hiding after content is set
+    hideUrls();
+    
     // Then load KaTeX and render math
     loadKaTeX();
+    
+    // Apply URL hiding again after KaTeX rendering
+    setTimeout(hideUrls, 500);
 
   }, [htmlContent, questions, answerKeyDisplayMode]);
 

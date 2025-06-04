@@ -51,10 +51,22 @@ export const generatePDF = ({
     <html>
     <head>
       <title>${paperTitle}</title>
+      <meta name="referrer" content="no-referrer">
       <!-- KaTeX CSS link can be included here or managed by GeneratedPdfPage.jsx -->
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css">
       <!-- KaTeX JS will be loaded by GeneratedPdfPage.jsx -->
       <style>
+        /* Hide URL display on hover and prevent URL copy */
+        a {
+          pointer-events: none;
+          cursor: default;
+          text-decoration: none;
+          color: inherit;
+        }
+        /* Hide URL display in status bar */
+        a[href]:after {
+          content: "";
+        }
         body {
           font-size: ${fontSize}px;
           font-weight: ${fontWeight};
@@ -203,6 +215,13 @@ export const generatePDF = ({
         
         /* Print-specific styles */
         @media print {
+          /* Hide URLs in printed output */
+          a[href]:after {
+            content: "" !important;
+          }
+          a {
+            text-decoration: none !important;
+          }
           @page {
             /* Set reasonable margins for content */
             margin-top: 0.75in;
@@ -218,6 +237,7 @@ export const generatePDF = ({
                to allow custom footer and page numbering to work as intended.
                Page numbering uses @bottom-center specifically. */
           }
+       
 
           body { 
             margin: 0; /* Content will now be spaced by @page margins */
@@ -310,12 +330,11 @@ export const generatePDF = ({
             bottom: 50;
             left: 0;
             right: 0;
-            
             width: 100%;
             font-size: 10px;
             background: transparent; /* Or white if preferred */
             border-top: 1px solid #ccc;
-            padding: 0px 0;
+            padding: 5px 0;
             /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
           }
           
@@ -425,19 +444,29 @@ export const generatePDF = ({
         <h2 style="text-align:center; font-size: 20px; margin-bottom: 20px;">Answer Key ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' ? '& Explanations' : ''}</h2>
         ${answerKeyDisplayMode === 'KEY_ONLY' ? `
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; width: 100%;">
-            ${questions.map((q, index) => `
+            ${questions.map((q, index) => {
+              const correctOptionIndex = q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer);
+              const optionLabel = optionNumberingStyle.startsWith('(') ? 
+                '(' + (optionNumberingStyle.includes('1') ? correctOptionIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + correctOptionIndex) : String.fromCharCode(65 + correctOptionIndex)) + ')' : 
+                (optionNumberingStyle.includes('1') ? correctOptionIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + correctOptionIndex) : String.fromCharCode(65 + correctOptionIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '');
+              return `
               <div style="font-weight: bold; page-break-inside: avoid;">
-                ${index + 1}. ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer))}
+                ${index + 1}. ${optionLabel}
               </div>
-            `).join('')}
+            `}).join('')}
           </div>
         ` : `
-          ${questions.map((q, index) => `
+          ${questions.map((q, index) => {
+              const correctOptionIndex = q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer);
+              const optionLabel = optionNumberingStyle.startsWith('(') ? 
+                '(' + (optionNumberingStyle.includes('1') ? correctOptionIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + correctOptionIndex) : String.fromCharCode(65 + correctOptionIndex)) + ')' : 
+                (optionNumberingStyle.includes('1') ? correctOptionIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + correctOptionIndex) : String.fromCharCode(65 + correctOptionIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '');
+              return `
             <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
-              <div style="font-weight: bold;">${index + 1}.${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer))}</div>
+              <div style="font-weight: bold;">${index + 1}. ${optionLabel}</div>
               ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${escapeHTML(q.explanation)}</div>` : ''}
             </div>
-          `).join('')}
+          `}).join('')}
         `}
       </div>
       ` : ''}
