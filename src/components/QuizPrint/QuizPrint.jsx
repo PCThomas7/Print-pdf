@@ -17,7 +17,7 @@ const QuizPrint = () => {
     const fetchQuizData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`);
+        const response = await fetch(`https://backend.professorpcthomas.com/api/quizzes/${quizId}`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch quiz: ${response.status} ${response.statusText}`);
