@@ -25,7 +25,9 @@ const PaperSettings = () => {
     fontWeight,
     setFontWeight,
     fontColor,
-    setFontColor
+    setFontColor,
+    optionNumberingStyle,
+    setOptionNumberingStyle
   } = useQuiz();
 
   return (
@@ -198,6 +200,25 @@ const PaperSettings = () => {
             onChange={(e) => setFontColor(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10"
           />
+        </div>
+
+        {/* Option Numbering Style */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Option Numbering Style
+          </label>
+          <select
+            value={optionNumberingStyle}
+            onChange={(e) => setOptionNumberingStyle(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="A)">A)</option>
+            <option value="(A)">(A)</option>
+            <option value="a)">a)</option>
+            <option value="(a)">(a)</option>
+            <option value="1)">1)</option>
+            <option value="(1)">(1)</option>
+          </select>
         </div>
       </div>
     </div>

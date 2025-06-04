@@ -20,7 +20,8 @@ const ActionButtons = () => {
     answerKeyDisplayMode,
     fontSize,
     fontWeight,
-    fontColor
+    fontColor,
+    optionNumberingStyle
   } = useQuiz();
 
   const navigate = useNavigate();
@@ -60,7 +61,9 @@ const ActionButtons = () => {
       fontSize,
       fontWeight,
       fontColor,
-      sections: sections.length > 0 ? sections : undefined
+    optionNumberingStyle,
+      sections: sections.length > 0 ? sections : undefined,
+      optionNumberingStyle
     };
     // Generate HTML content and navigate to the dedicated PDF page
     const htmlContent = generatePDF(quizDataForPdf);

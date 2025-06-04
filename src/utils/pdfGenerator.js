@@ -39,7 +39,8 @@ export const generatePDF = ({
   fontSize,
   fontWeight,
   fontColor,
-  sections
+  sections,
+  optionNumberingStyle = 'A)'
 }) => {
   // Create a new window for printing
   const printWindow = window.open('', '_blank');
@@ -182,7 +183,7 @@ export const generatePDF = ({
         /* Fixed footer at bottom of every page */
         .footer {
           position: fixed;
-          bottom: 10px; /* Lowered from 20px to 10px */
+          bottom: 0;
           left: 0;
           right: 0;
           text-align: center;
@@ -190,13 +191,14 @@ export const generatePDF = ({
           color: #666;
           background: white;
           z-index: 1000;
-          padding: 10px 0;
+          padding: 5px 0;
           border-top: 1px solid #ddd;
+          width: 100%;
         }
         
         /* Add bottom margin to content to avoid footer overlap */
         .questions-container {
-          margin-bottom: 70px; /* Adjusted from 80px to 70px */
+          margin-bottom: 40px; /* Reduced to prevent excessive space */
         }
         
         /* Print-specific styles */
@@ -224,7 +226,7 @@ export const generatePDF = ({
 
           .questions-container {
             column-gap: 20px;
-            margin-bottom: 60px; /* Ensure space for the fixed footer */
+            margin-bottom: 30px; /* Reduced to prevent excessive space */
           }
 
           .question { 
@@ -246,13 +248,14 @@ export const generatePDF = ({
 
           .footer {
             position: fixed;
-            bottom: 5px; /* Lowered from 15px to 5px for print */
-            left: 15px;
-            right: 15px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
             font-size: 10px;
             background: transparent; /* Or white if preferred */
             border-top: 1px solid #ccc;
-            padding: 8px 0;
+            padding: 5px 0;
             /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
           }
         }
@@ -281,7 +284,7 @@ export const generatePDF = ({
         /* Fixed footer at bottom of every page */
         .footer {
           position: fixed;
-          bottom: 10px; /* Lowered from 20px to 10px */
+          bottom: 0;
           left: 0;
           right: 0;
           text-align: center;
@@ -289,35 +292,33 @@ export const generatePDF = ({
           color: #666;
           background: white;
           z-index: 1000;
-          padding: 10px 0;
+          padding: 5px 0;
           border-top: 1px solid #ddd;
+          width: 100%;
         }
-        
+
         /* Add bottom margin to content to avoid footer overlap */
         .questions-container {
-          margin-bottom: 70px; /* Adjusted from 80px to 70px */
+          margin-bottom: 40px; /* Reduced to prevent excessive space */
         }
-        
+
         /* Print-specific footer styles */
         @media print {
           .footer {
             position: fixed;
-            bottom: 15px;
-            left: 15px;
-            right: 15px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
             font-size: 10px;
-            background: transparent;
+            background: transparent; /* Or white if preferred */
             border-top: 1px solid #ccc;
-            padding: 8px 0;
+            padding: 5px 0;
+            /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
           }
           
           .questions-container {
-            margin-bottom: 50px; /* Adjusted from 60px to 50px for print */
-          }
-          
-          /* Ensure footer appears on every printed page */
-          @page {
-            margin-bottom: 50px; /* Adjusted from 60px to 50px for print */
+            margin-bottom: 30px; /* Reduced to prevent excessive space */
           }
         }
         
@@ -369,7 +370,11 @@ export const generatePDF = ({
                 <div class="options">
                   ${question.options.map((option, optIndex) => `
                     <div class="option">
-                      <div class="option-label">${String.fromCharCode(65 + optIndex)})</div>
+                      <div class="option-label">${
+                        optionNumberingStyle.startsWith('(') ? 
+                        '(' + (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + ')' : 
+                        (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '')
+                      }</div>
                       <div class="option-content">
                         <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
                         ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
@@ -393,7 +398,11 @@ export const generatePDF = ({
             <div class="options">
               ${question.options.map((option, optIndex) => `
                 <div class="option">
-                  <div class="option-label">${String.fromCharCode(65 + optIndex)})</div>
+                  <div class="option-label">${
+                    optionNumberingStyle.startsWith('(') ? 
+                    '(' + (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + ')' : 
+                    (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '')
+                  }</div>
                   <div class="option-content">
                     <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
                     ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}

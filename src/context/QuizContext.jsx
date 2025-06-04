@@ -59,6 +59,7 @@ export const QuizProvider = ({ children, initialData }) => {
   const [fontSize, setFontSize] = useState(12);
   const [fontWeight, setFontWeight] = useState("normal"); // normal, bold
   const [fontColor, setFontColor] = useState("#000000");
+  const [optionNumberingStyle, setOptionNumberingStyle] = useState("A)"); // A), (A), a), (a), 1), (1)
 
   // Functions
   const addQuestion = () => {
@@ -141,7 +142,9 @@ export const QuizProvider = ({ children, initialData }) => {
     fontWeight,
     setFontWeight,
     fontColor,
-    setFontColor
+    setFontColor,
+    optionNumberingStyle,
+    setOptionNumberingStyle
   };
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
