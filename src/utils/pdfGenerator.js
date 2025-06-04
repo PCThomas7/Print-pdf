@@ -206,7 +206,7 @@ export const generatePDF = ({
           @page {
             /* Set reasonable margins for content */
             margin-top: 0.75in;
-            margin-bottom: 0.75in; /* Ensure space for custom footer and page number */
+            margin-bottom: 0.50in; /* Ensure space for custom footer and page number */
             margin-left: 0.5in;
             margin-right: 0.5in;
 
@@ -287,12 +287,13 @@ export const generatePDF = ({
           bottom: 0;
           left: 0;
           right: 0;
+          top:20;
           text-align: center;
           font-size: 11px;
           color: #666;
           background: white;
           z-index: 1000;
-          padding: 5px 0;
+          padding: 0px 0;
           border-top: 1px solid #ddd;
           width: 100%;
         }
@@ -306,14 +307,15 @@ export const generatePDF = ({
         @media print {
           .footer {
             position: fixed;
-            bottom: 0;
+            bottom: 50;
             left: 0;
             right: 0;
+            
             width: 100%;
             font-size: 10px;
             background: transparent; /* Or white if preferred */
             border-top: 1px solid #ccc;
-            padding: 5px 0;
+            padding: 0px 0;
             /* Ensure it's above other content if z-index issues arise, though usually not needed with @page */
           }
           
@@ -432,7 +434,7 @@ export const generatePDF = ({
         ` : `
           ${questions.map((q, index) => `
             <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
-              <div style="font-weight: bold;">${index + 1}. Correct Answer: ${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer))}</div>
+              <div style="font-weight: bold;">${index + 1}.${String.fromCharCode(65 + q.options.findIndex(opt => opt.text === q.correctAnswer || String.fromCharCode(65 + q.options.indexOf(opt)) === q.correctAnswer))}</div>
               ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${escapeHTML(q.explanation)}</div>` : ''}
             </div>
           `).join('')}
