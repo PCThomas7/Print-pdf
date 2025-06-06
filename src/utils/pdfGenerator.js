@@ -125,7 +125,7 @@ export const generatePDF = ({
         }
         .question-header {
           font-weight: bold;
-          font-size: 13px;
+          font-size: ${fontSize + 1}px;
           color: #333;
           display: inline;
         }
@@ -152,11 +152,11 @@ export const generatePDF = ({
         .option-label {
           font-weight: bold;
           min-width: 18px;
-          font-size: 11px;
+          font-size: ${fontSize - 1}px;
         }
         .option-content {
           flex: 1;
-          font-size: 11px;
+          font-size: ${fontSize - 1}px;
         }
         .option-image {
           max-width: 150px;
