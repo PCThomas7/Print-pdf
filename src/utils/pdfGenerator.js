@@ -109,9 +109,10 @@ export const generatePDF = ({
         /* Two Column Layout */
         .questions-container {
           column-count: 2;
-          column-gap: 25px;
+          column-gap: 20px;
           column-rule: 1px solid #ddd;
-          padding-bottom: 20px; /* Add padding to prevent column rule from touching footer */
+          padding-bottom: 20px;
+          column-fill: balance;
         }
         
         /* Section header styling */
@@ -126,8 +127,7 @@ export const generatePDF = ({
           border-radius: 4px;
           page-break-inside: avoid;
           break-inside: avoid;
-          display: inline-block;
-          width: 100%;
+          display: block;
         }
         .question {
           margin-bottom: 15px;
@@ -217,7 +217,7 @@ export const generatePDF = ({
         /* Fixed footer at bottom of every page */
         .footer {
           position: fixed;
-          bottom: 0;
+          bottom: 5;
           left: 0;
           right: 0;
           text-align: center;
@@ -412,32 +412,29 @@ export const generatePDF = ({
         sections.map((section, sectionIndex) => `
           ${section.name ? `<div class="section-header">${section.name}</div>` : ''}
           ${section.questions.map((question, questionIndex) => {
-            // Calculate the overall question number
             let overallIndex = questionIndex;
             for (let i = 0; i < sectionIndex; i++) {
               overallIndex += sections[i].questions.length;
             }
             return `
               <div class="question">
-                <div class="question-content">
-                  <div class="question-num-text">
-                  <div class="question-header">${overallIndex + 1}.  </div>
-                  <div id="question-${question.id}-text">${escapeHTML(question.questionText)}</div>
-                  </div>
-                  ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${overallIndex + 1} Image">` : ''}
+                <div class="question-num-text">
+                  <span class="question-header">${overallIndex + 1}.</span>
+                  <span id="question-${question.id}-text">${escapeHTML(question.questionText)}</span>
                 </div>
+                ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${overallIndex + 1} Image">` : ''}
                 <div class="options">
                   ${question.options.map((option, optIndex) => `
                     <div class="option">
-                      <div class="option-label">${
+                      <span class="option-label">${
                         optionNumberingStyle.startsWith('(') ? 
                         '(' + (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + ')' : 
                         (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '')
-                      }</div>
-                      <div class="option-content">
-                        <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
+                      }</span>
+                      <span class="option-content">
+                        <span id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</span>
                         ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
-                      </div>
+                      </span>
                     </div>
                   `).join('')}
                 </div>
@@ -449,23 +446,23 @@ export const generatePDF = ({
         // If no sections, render questions as before
         questions.map((question, index) => `
           <div class="question">
-            <div class="question-content">
-            <div class="question-header">${index + 1}. </div>
-              <div id="question-${question.id}-text">${escapeHTML(question.questionText)}</div>
-              ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${index + 1} Image">` : ''}
+            <div class="question-num-text">
+              <span class="question-header">${index + 1}.</span>
+              <span id="question-${question.id}-text">${escapeHTML(question.questionText)}</span>
             </div>
+            ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${index + 1} Image">` : ''}
             <div class="options">
               ${question.options.map((option, optIndex) => `
                 <div class="option">
-                  <div class="option-label">${
+                  <span class="option-label">${
                     optionNumberingStyle.startsWith('(') ? 
                     '(' + (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + ')' : 
                     (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '')
-                  }</div>
-                  <div class="option-content">
-                    <div id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</div>
+                  }</span>
+                  <span class="option-content">
+                    <span id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</span>
                     ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
-                  </div>
+                  </span>
                 </div>
               `).join('')}
             </div>
