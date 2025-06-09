@@ -348,7 +348,7 @@ export const generatePDF = ({
           }
           
           .questions-container {
-            margin-bottom: 50px; /* Increased to prevent column rule from touching footer */
+            margin-bottom: 40px; /* Increased to prevent column rule from touching footer */
             padding-bottom: 20px; /* Add padding to ensure column rule doesn't extend to footer */
           }
         }
@@ -379,7 +379,7 @@ export const generatePDF = ({
         // If we have sections, render questions grouped by section
         sections.map((section, sectionIndex) => `
           ${section.name ? `
-            <div class="section-header" style="column-span: all; margin-top: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold; background-color: #f0f0f0; padding: 8px 12px; border-radius: 4px; page-break-inside: avoid;">
+            <div class="section-header" style="margin-top: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold; background-color: #f0f0f0; padding: 8px 12px; border-radius: 4px; page-break-inside: avoid;">
               ${section.name}
             </div>
           ` : ''}
