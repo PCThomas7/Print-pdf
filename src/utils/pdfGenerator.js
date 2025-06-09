@@ -114,14 +114,33 @@ export const generatePDF = ({
           padding-bottom: 20px; /* Add padding to prevent column rule from touching footer */
         }
         
-        .question {
-          margin-bottom: 25px;
+        /* Section header styling */
+        .section-header {
+          column-span: none;
+          margin-top: 0;
+          margin-bottom: 0;
+          font-size: 16px;
+          font-weight: bold;
+          background-color: #f0f0f0;
+          padding: 3px 6px;
+          border-radius: 4px;
           page-break-inside: avoid;
           break-inside: avoid;
           display: inline-block;
           width: 100%;
-          position: relative; /* Establish positioning context */
-          padding-bottom: 5px; /* Add padding to create space at bottom */
+        }
+        .question {
+          margin-bottom: 15px;
+          page-break-inside: avoid;
+          break-inside: avoid;
+          display: inline-block;
+          width: 100%;
+          position: relative;
+          padding-bottom: 3px;
+        }
+        .question-content {
+          margin-bottom: 5px;
+          padding-left: 8px;
         }
         .question-header {
           font-weight: bold;
@@ -249,18 +268,31 @@ export const generatePDF = ({
           }
 
           .questions-container {
-            column-gap: 20px;
-            margin-bottom: 50px; /* Increased to prevent column rule from touching footer */
+            column-gap: 15px;
+            margin-bottom: 40px;
             column-rule: 1px solid #ddd;
-            padding-bottom: 20px; /* Add padding to ensure column rule doesn't extend to footer */
+            padding-bottom: 15px;
           }
 
           .question { 
             page-break-inside: avoid;
             break-inside: avoid;
-            margin-bottom: 25px; /* Increased margin to prevent questions from touching page breaks */
+            margin-bottom: 12px;
           }
-          .question-num-text{
+
+          .section-header {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            margin-bottom: 2px;
+          }
+
+          .question-num-text {
+            display: flex;
+            gap: 3px;
+            align-items: flex-start;
+          }
+        }
+        .question-num-text{
            display: flex;
            gap :5px;
           }
@@ -378,11 +410,7 @@ export const generatePDF = ({
       ${sections && sections.length > 0 ? 
         // If we have sections, render questions grouped by section
         sections.map((section, sectionIndex) => `
-          ${section.name ? `
-            <div class="section-header" style="margin-top: 20px; margin-bottom: 15px; font-size: 16px; font-weight: bold; background-color: #f0f0f0; padding: 8px 12px; border-radius: 4px; page-break-inside: avoid;">
-              ${section.name}
-            </div>
-          ` : ''}
+          ${section.name ? `<div class="section-header">${section.name}</div>` : ''}
           ${section.questions.map((question, questionIndex) => {
             // Calculate the overall question number
             let overallIndex = questionIndex;
