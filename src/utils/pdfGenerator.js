@@ -28,6 +28,21 @@ const escapeHTML = (str) => {
   });
 };
 
+// Function to check if text contains KaTeX expressions
+const containsKaTeX = (text) => {
+  if (typeof text !== 'string') return false;
+  // Check for $ or $$ delimiters, or common LaTeX commands
+  return /\$|\\begin|\\end|\\frac|\\sqrt|\\sum|\\int|\\lim|\\text/.test(text);
+};
+
+// Function to prepare text for KaTeX rendering
+// This will be used by GeneratedPdfPage component
+const prepareForKaTeX = (text) => {
+  if (typeof text !== 'string') return '';
+  // Add a special marker to indicate this text should be processed by KaTeX
+  return `<katex-content>${text}</katex-content>`;
+};
+
 export const generatePDF = ({
   paperTitle,
   header,
@@ -40,7 +55,8 @@ export const generatePDF = ({
   fontWeight,
   fontColor,
   sections,
-  optionNumberingStyle = 'A)'
+  optionNumberingStyle = 'A)',
+  useKatex = true // Add new parameter to control KaTeX rendering
 }) => {
   // Create a new window for printing
   const printWindow = window.open('', '_blank');
@@ -420,7 +436,7 @@ export const generatePDF = ({
               <div class="question">
                 <div class="question-num-text">
                   <span class="question-header">${overallIndex + 1}.</span>
-                  <span id="question-${question.id}-text">${escapeHTML(question.questionText)}</span>
+                  <span id="question-${question.id}-text">${useKatex && containsKaTeX(question.questionText) ? prepareForKaTeX(question.questionText) : escapeHTML(question.questionText)}</span>
                 </div>
                 ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${overallIndex + 1} Image">` : ''}
                 <div class="options">
@@ -432,7 +448,7 @@ export const generatePDF = ({
                         (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '')
                       }</span>
                       <span class="option-content">
-                        <span id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</span>
+                        <span id="option-${question.id}-${optIndex}">${useKatex && containsKaTeX(option.text) ? prepareForKaTeX(option.text) : escapeHTML(option.text)}</span>
                         ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
                       </span>
                     </div>
@@ -448,7 +464,7 @@ export const generatePDF = ({
           <div class="question">
             <div class="question-num-text">
               <span class="question-header">${index + 1}.</span>
-              <span id="question-${question.id}-text">${escapeHTML(question.questionText)}</span>
+              <span id="question-${question.id}-text">${useKatex && containsKaTeX(question.questionText) ? prepareForKaTeX(question.questionText) : escapeHTML(question.questionText)}</span>
             </div>
             ${question.questionImage ? `<img src="${question.questionImage}" class="question-image" alt="Question ${index + 1} Image">` : ''}
             <div class="options">
@@ -460,7 +476,7 @@ export const generatePDF = ({
                     (optionNumberingStyle.includes('1') ? optIndex + 1 : optionNumberingStyle.includes('a') ? String.fromCharCode(97 + optIndex) : String.fromCharCode(65 + optIndex)) + optionNumberingStyle.replace(/[A-Za-z0-9]/g, '')
                   }</span>
                   <span class="option-content">
-                    <span id="option-${question.id}-${optIndex}">${escapeHTML(option.text)}</span>
+                    <span id="option-${question.id}-${optIndex}">${useKatex && containsKaTeX(option.text) ? prepareForKaTeX(option.text) : escapeHTML(option.text)}</span>
                     ${option.image ? `<img src="${option.image}" class="option-image" alt="Option ${String.fromCharCode(65 + optIndex)} Image">` : ''}
                   </span>
                 </div>
@@ -499,7 +515,7 @@ export const generatePDF = ({
               return `
             <div class="answer-item" style="margin-bottom: 15px; page-break-inside: avoid;">
               <div style="font-weight: bold;">${index + 1}. ${optionLabel}</div>
-              ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${escapeHTML(q.explanation)}</div>` : ''}
+              ${answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && q.explanation ? `<div style="margin-top: 5px; padding-left: 15px;" id="explanation-${q.id}">${useKatex && containsKaTeX(q.explanation) ? prepareForKaTeX(q.explanation) : escapeHTML(q.explanation)}</div>` : ''}
             </div>
           `}).join('')}
         `}

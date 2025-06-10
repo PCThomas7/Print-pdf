@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import KatexRenderer from '../KaTeX/KatexRenderer';
 
 const GeneratedPdfPage = () => {
   const location = useLocation();
@@ -37,47 +38,209 @@ const GeneratedPdfPage = () => {
       }
     };
 
+    // Use KatexRenderer component to render math content
     const renderMathContent = (text, displayMode = false) => {
-      if (!text || typeof text !== 'string' || !window.katex) return text;
+      if (!text || typeof text !== 'string') return text;
+      
+      // Create a temporary div to render the KatexRenderer component
+      const tempDiv = document.createElement('div');
+      
+      // Use ReactDOM to render the KatexRenderer component to the temporary div
+      // Since we're in a useEffect hook, we can't use JSX directly
+      // Instead, we'll use the rendered HTML from the KatexRenderer component's logic
+      
+      // First, handle escaped HTML entities that might be part of the original text
+      const decodingDiv = document.createElement('div');
+      decodingDiv.innerHTML = text;
+      let decodedText = decodingDiv.textContent || decodingDiv.innerText || "";
+      
+      // Replace escaped dollar signs if they were used to represent literal dollars
+      decodedText = decodedText.replace(/\\\$/g, '\$'); // Convert \\$ to \$
+      
+      // Use the same logic as KatexRenderer component
       try {
-        // First, handle escaped HTML entities that might be part of the original text
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = text;
-        let decodedText = tempDiv.textContent || tempDiv.innerText || "";
-
-        // Replace escaped dollar signs if they were used to represent literal dollars
-        // This step might need adjustment based on how literal dollars are input vs. math delimiters
-        // For now, assuming \$ is for literal and $...$ for math
-        decodedText = decodedText.replace(/\\\$/g, '\$'); // Convert \\$ to \$
-
-        // Handle display math $$...$$
-        decodedText = decodedText.replace(/\$\$(.*?)\$\$/g, (match, math) => {
-          try {
-            return window.katex.renderToString(math, { displayMode: true, throwOnError: false });
-          } catch (e) {
-            console.warn('KaTeX display math error:', e, 'for content:', math);
-            return match; // Return original on error
-          }
-        });
-
-        // Handle inline math $...$
-        decodedText = decodedText.replace(/\$(?!\$)(.*?)(?<!\$)\$/g, (match, math) => {
-          // Avoid matching already processed display math or escaped dollars
-          if (match.startsWith('$$') || match.endsWith('$$')) return match;
-          try {
-            return window.katex.renderToString(math, { displayMode: false, throwOnError: false });
-          } catch (e) {
-            console.warn('KaTeX inline math error:', e, 'for content:', math);
-            return match; // Return original on error
-          }
-        });
+        if (!window.katex) {
+          console.warn('KaTeX library not loaded yet');
+          return text;
+        }
         
-        // Handle line breaks specifically for KaTeX, if \\ is used and not escaped
-        // The pdfGenerator already replaces \\\\ with <br/>, so this might be redundant
-        // or needs to be coordinated. For now, assuming <br/> is handled by HTML.
-        // decodedText = decodedText.replace(/\\\\/g, '<br/>'); 
-
-        return decodedText;
+        // Process tabular to array conversion (from KatexRenderer)
+        const processTabular = (text) => {
+          if (typeof text !== 'string') return '';
+          const tabularRegex = /\\begin\{tabular\}(\{[^}]*\})([\s\S]*?)\\end\{tabular\}/g;
+          
+          return text.replace(tabularRegex, (match, columnSpec, content) => {
+            const rows = content.trim().split(/\\\\\s*/);
+            const processedRows = [];
+            
+            for (let row of rows) {
+              if (!row.trim()) continue;
+              
+              if (row.trim() === '\\hline') {
+                processedRows.push('\\hline');
+                continue;
+              }
+              
+              const cells = row.split('&');
+              const processedCells = [];
+              
+              for (let cell of cells) {
+                cell = cell.trim();
+                
+                if (cell.match(/^\$.*\$$/)) {
+                  processedCells.push(cell.substring(1, cell.length - 1));
+                } else if (cell.match(/\$/)) {
+                  processedCells.push(cell.replace(/\$(.*?)\$/g, '$1'));
+                } else if (cell && !cell.match(/^\\/) && !cell.match(/^\s*$/)) {
+                  processedCells.push(`\\text{${cell}}`);
+                } else {
+                  processedCells.push(cell);
+                }
+              }
+              
+              processedRows.push(processedCells.join(' & '));
+            }
+            
+            const processedContent = processedRows.join(' \\\\ ');
+            return `\\begin{array}${columnSpec}${processedContent}\\end{array}`;
+          });
+        };
+        
+        // Parse text into segments of text and math (from KatexRenderer)
+        const parseTextAndMath = (text) => {
+          const segments = [];
+          let currentIndex = 0;
+          let inMath = false;
+          let inDisplayMath = false;
+          let mathStartIndex = 0;
+          
+          for (let i = 0; i < text.length; i++) {
+            if (text[i] === '\\' && i + 1 < text.length && text[i + 1] === '$') {
+              i++;
+              continue;
+            }
+            
+            if (i + 1 < text.length && text[i] === '$' && text[i + 1] === '$') {
+              if (!inMath && !inDisplayMath) {
+                if (i > currentIndex) {
+                  segments.push({
+                    type: 'text',
+                    content: text.substring(currentIndex, i)
+                  });
+                }
+                inDisplayMath = true;
+                mathStartIndex = i + 2;
+                i++;
+              } else if (inDisplayMath) {
+                segments.push({
+                  type: 'math',
+                  displayMode: true,
+                  content: text.substring(mathStartIndex, i)
+                });
+                inDisplayMath = false;
+                currentIndex = i + 2;
+                i++;
+              }
+            } else if (text[i] === '$') {
+              if (!inMath && !inDisplayMath) {
+                if (i > currentIndex) {
+                  segments.push({
+                    type: 'text',
+                    content: text.substring(currentIndex, i)
+                  });
+                }
+                inMath = true;
+                mathStartIndex = i + 1;
+              } else if (inMath) {
+                segments.push({
+                  type: 'math',
+                  displayMode: false,
+                  content: text.substring(mathStartIndex, i)
+                });
+                inMath = false;
+                currentIndex = i + 1;
+              }
+            }
+          }
+          
+          if (currentIndex < text.length) {
+            if (inMath) {
+              segments.push({
+                type: 'text',
+                content: '$' + text.substring(mathStartIndex)
+              });
+            } else if (inDisplayMath) {
+              segments.push({
+                type: 'text',
+                content: '$$' + text.substring(mathStartIndex)
+              });
+            } else {
+              segments.push({
+                type: 'text',
+                content: text.substring(currentIndex)
+              });
+            }
+          }
+          
+          if ((segments.length === 0 || (segments.length === 1 && segments[0].type === 'text')) && !displayMode) {
+            const textContent = segments.length === 1 ? segments[0].content : text;
+            const hasActualMathSymbols = /(?:\\[a-zA-Z]+(?![a-zA-Z])(?!\\))|[${}^_]/.test(textContent);
+            const onlyHasLineBreaks = !hasActualMathSymbols && /\\\\/.test(textContent);
+            
+            if (hasActualMathSymbols && !onlyHasLineBreaks) {
+              return [{ type: 'math', displayMode: false, content: text }];
+            }
+            
+            return segments.length === 0 ? [{ type: 'text', content: text }] : segments;
+          }
+          
+          return segments;
+        };
+        
+        // Process text line breaks
+        const processTextLineBreaks = (text) => {
+          if (typeof text !== 'string') return '';
+          return text.replace(/\\\\/g, '<br/>');
+        };
+        
+        const processedText = processTabular(decodedText);
+        
+        if (displayMode) {
+          const html = window.katex.renderToString(processedText, {
+            displayMode: true,
+            throwOnError: false,
+            errorColor: '#f44336',
+            trust: true,
+            strict: "ignore",
+          });
+          return html;
+        } else {
+          const segments = parseTextAndMath(processedText);
+          let html = '';
+          
+          for (const segment of segments) {
+            if (segment.type === 'text') {
+              const textContent = processTextLineBreaks(segment.content);
+              html += `<span class="plain-text">${textContent}</span>`;
+            } else {
+              try {
+                const mathHtml = window.katex.renderToString(segment.content, {
+                  displayMode: segment.displayMode,
+                  throwOnError: false,
+                  errorColor: '#f44336',
+                  trust: true,
+                  strict: "ignore"
+                });
+                html += mathHtml;
+              } catch (mathError) {
+                console.warn('KaTeX math error:', mathError.message, 'for content:', segment.content);
+                html += `<span style="color: #f44336;">${segment.content}</span>`;
+              }
+            }
+          }
+          
+          return html;
+        }
       } catch (e) {
         console.error('Error in renderMathContent:', e, 'for text:', text);
         return text; // Return original text on error
@@ -85,28 +248,42 @@ const GeneratedPdfPage = () => {
     };
 
     const renderMathInHtml = () => {
-      if (!window.katex || !questions) return;
+      if (!window.katex) return;
 
-      questions.forEach(question => {
-        const questionTextEl = contentRef.current.querySelector(`#question-${question.id}-text`);
-        if (questionTextEl && question.questionText) {
-          questionTextEl.innerHTML = renderMathContent(question.questionText);
-        }
-
-        question.options.forEach((option, optIndex) => {
-          const optionTextEl = contentRef.current.querySelector(`#option-${question.id}-${optIndex}`);
-          if (optionTextEl && option.text) {
-            optionTextEl.innerHTML = renderMathContent(option.text);
-          }
+      // First, find all katex-content tags and process them
+      const katexContentElements = contentRef.current.querySelectorAll('katex-content');
+      if (katexContentElements.length > 0) {
+        console.log(`Found ${katexContentElements.length} katex-content elements`);
+        katexContentElements.forEach(element => {
+          const originalText = element.textContent;
+          element.innerHTML = renderMathContent(originalText);
         });
+      } else {
+        console.log('No katex-content elements found, falling back to direct rendering');
+        // Fallback to direct rendering if no katex-content tags are found
+        if (questions) {
+          questions.forEach(question => {
+            const questionTextEl = contentRef.current.querySelector(`#question-${question.id}-text`);
+            if (questionTextEl && question.questionText) {
+              questionTextEl.innerHTML = renderMathContent(question.questionText);
+            }
 
-        if (answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && question.explanation) {
-          const explanationEl = contentRef.current.querySelector(`#explanation-${question.id}`);
-          if (explanationEl) {
-            explanationEl.innerHTML = '<strong>Explanation:</strong> ' + renderMathContent(question.explanation);
-          }
+            question.options.forEach((option, optIndex) => {
+              const optionTextEl = contentRef.current.querySelector(`#option-${question.id}-${optIndex}`);
+              if (optionTextEl && option.text) {
+                optionTextEl.innerHTML = renderMathContent(option.text);
+              }
+            });
+
+            if (answerKeyDisplayMode === 'KEY_AND_EXPLANATION' && question.explanation) {
+              const explanationEl = contentRef.current.querySelector(`#explanation-${question.id}`);
+              if (explanationEl) {
+                explanationEl.innerHTML = '<strong>Explanation:</strong> ' + renderMathContent(question.explanation);
+              }
+            }
+          });
         }
-      });
+      }
       triggerPrint();
     };
 

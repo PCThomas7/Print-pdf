@@ -61,9 +61,9 @@ const ActionButtons = () => {
       fontSize,
       fontWeight,
       fontColor,
-    optionNumberingStyle,
+      optionNumberingStyle,
       sections: sections.length > 0 ? sections : undefined,
-      optionNumberingStyle
+      useKatex: true // Enable KaTeX rendering by default
     };
     // Generate HTML content and navigate to the dedicated PDF page
     const htmlContent = generatePDF(quizDataForPdf);
